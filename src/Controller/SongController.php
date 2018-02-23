@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\Song;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -33,13 +34,20 @@ class SongController extends Controller
     /**
      * @Route("/{songID}", name="song")
      * @param string $songID
-     * @return \Symfony\Component\HttpFoundation\JsonResponse
+     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Symfony\Component\HttpFoundation\JsonResponse
      */
     public function song(string $songID)
     {
-        return $this->json([
-            'message' => 'Could not find Song: ' . $songID
-        ]);
+        $music = $this->container->get('League\Flysystem\Filesystem');
+        $song = $this->getDoctrine()->getRepository(Song::class)->findOneBy(['id' => $songID]);
+
+        if ($song === null) {
+            return $this->json([
+                'message' => 'Could not find Song: ' . $songID
+            ]);
+        }
+
+        return $this->file($music->get($song->getPath())->read(), basename($song->getPath()));
     }
 
 }
