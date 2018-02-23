@@ -3,8 +3,8 @@ oneup_flysystem:
     adapters:
         default_adapter:
             local:
-                directory: '%kernel.cache_dir%/flysystem'
+                directory: '%kernel.project_dir%/'
     filesystems:
-        default_filesystem:
+        music:
             adapter: default_adapter
             alias: League\Flysystem\Filesystem
