@@ -3,7 +3,7 @@ oneup_flysystem:
     adapters:
         default_adapter:
             local:
-                directory: '%kernel.project_dir%/'
+                directory: '%env(MEDIA_FOLDER)%'
     filesystems:
         music:
             adapter: default_adapter
