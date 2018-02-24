@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class KoelUserAddCommand extends Command
 {
@@ -19,15 +20,21 @@ class KoelUserAddCommand extends Command
      * @var EntityManagerInterface
      */
     private $entityManager;
+    /**
+     * @var ValidatorInterface
+     */
+    private $validator;
 
     /**
      * KoelUserAddCommand constructor.
      * @param EntityManagerInterface $entityManager
+     * @param ValidatorInterface $validator
      */
-    public function __construct(EntityManagerInterface $entityManager)
+    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator)
     {
         parent::__construct();
         $this->entityManager = $entityManager;
+        $this->validator = $validator;
     }
 
 
@@ -66,6 +73,20 @@ class KoelUserAddCommand extends Command
         $isAdmin = $input->hasOption('isAdmin');
 
         $user = new User($name, $mail, $password, $isAdmin);
+
+        $errors = $this->validator->validate($user);
+
+        if (count($errors) > 0) {
+            /*
+             * Uses a __toString method on the $errors variable which is a
+             * ConstraintViolationList object. This gives us a nice string
+             * for debugging.
+             */
+            $errorsString = (string) $errors;
+
+            $io->error('Error occurred: ' . $errorsString);
+            return;
+        }
 
         $this->entityManager->persist($user);
         $this->entityManager->flush();
