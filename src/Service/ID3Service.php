@@ -35,7 +35,7 @@ class ID3Service
         $this->filesystem = $filesystem;
     }
 
-    public function getTagsFromFile(string $path)
+    public function getTagsFromFile(string $path): ?array
     {
         $this->filesystem->get($path);
 
@@ -52,6 +52,10 @@ class ID3Service
         $track = $this->getOrDefault($fileInformations, 'tags.id3v2.track_number.0', '1');
         if (substr_count($track, '/') + 1 > 1) {
             $track = explode('/', $track)[0];
+        }
+
+        if (isset($fileInformations['error'])) {
+            return null;
         }
 
         $tags = [

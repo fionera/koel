@@ -77,6 +77,12 @@ class KoelSyncAllCommand extends Command
          */
         $albums = [];
 
+        /**
+         * Filepaths for all Files with Errors
+         * @var string[]
+         */
+        $errors = [];
+
         $bar = $io->createProgressBar(count($fileList));
         $bar->start();
         foreach ($fileList as $file) {
@@ -86,7 +92,16 @@ class KoelSyncAllCommand extends Command
                 continue;
             }
 
+            if ($songRepo->findOneBy(['path' => $filePath]) !== null) {
+                continue;
+            }
+
             $tags = $this->ID3Service->getTagsFromFile($filePath);
+
+            if ($tags === null) {
+                $errors[] = $filePath;
+                continue;
+            }
 
             $artist = null;
             if (!array_key_exists($tags['artist'], $artists)){
