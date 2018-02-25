@@ -2,12 +2,12 @@
 
 namespace App\Controller;
 
-use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
+use Symfony\Component\Routing\Annotation\Route;
 
-    /**
-     * @Route("/user", name="user_")
-     */
+/**
+ * @Route("/user", name="user_")
+ */
 class UserController extends Controller
 {
     /**

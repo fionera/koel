@@ -2,18 +2,10 @@
 
 namespace App\Service;
 
-
 use League\Flysystem\Filesystem;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
 class ID3Service
 {
-    /**
-     * @var ContainerInterface
-     */
-    private $container;
-
     /**
      * @var \getID3
      */
@@ -30,6 +22,7 @@ class ID3Service
      */
     public function __construct(Filesystem $filesystem)
     {
+        /** @noinspection PhpUnhandledExceptionInspection */
         /** @noinspection ExceptionsAnnotatingAndHandlingInspection */
         $this->ID3Tag = new \getID3();
         $this->filesystem = $filesystem;

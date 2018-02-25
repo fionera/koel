@@ -50,8 +50,7 @@ class SongController extends Controller
 
         $response = new Response();
         $response->setContent($music->get($song->getPath())->read());
-        $response->headers->set('Content-Length',$music->get($song->getPath())->getSize());
+        $response->headers->set('Content-Length', $music->get($song->getPath())->getSize());
         return $response;
     }
-
 }

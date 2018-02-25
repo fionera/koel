@@ -17,7 +17,7 @@ class ArtistController extends Controller
      */
     public function base()
     {
-        return $this->forward('App\Controller\ArtistController::index' );
+        return $this->forward('App\Controller\ArtistController::index');
     }
 
     /**
