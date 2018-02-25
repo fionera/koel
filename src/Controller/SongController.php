@@ -3,6 +3,7 @@
 namespace App\Controller;
 
 use App\Entity\Song;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
 
@@ -34,7 +35,7 @@ class SongController extends Controller
     /**
      * @Route("/{songID}", name="song")
      * @param string $songID
-     * @return \Symfony\Component\HttpFoundation\BinaryFileResponse|\Symfony\Component\HttpFoundation\JsonResponse
+     * @return Response
      */
     public function song(string $songID)
     {
@@ -47,7 +48,10 @@ class SongController extends Controller
             ]);
         }
 
-        return $this->file($music->get($song->getPath())->read(), basename($song->getPath()));
+        $response = new Response();
+        $response->setContent($music->get($song->getPath())->read());
+        $response->headers->set('Content-Length',$music->get($song->getPath())->getSize());
+        return $response;
     }
 
 }
