@@ -11,6 +11,7 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 use Symfony\Component\Console\Style\SymfonyStyle;
+use Symfony\Component\Security\Core\Encoder\UserPasswordEncoderInterface;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class KoelUserAddCommand extends Command
@@ -24,17 +25,23 @@ class KoelUserAddCommand extends Command
      * @var ValidatorInterface
      */
     private $validator;
+    /**
+     * @var UserPasswordEncoderInterface
+     */
+    private $passwordEncoder;
 
     /**
      * KoelUserAddCommand constructor.
      * @param EntityManagerInterface $entityManager
      * @param ValidatorInterface $validator
+     * @param UserPasswordEncoderInterface $passwordEncoder
      */
-    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator)
+    public function __construct(EntityManagerInterface $entityManager, ValidatorInterface $validator, UserPasswordEncoderInterface $passwordEncoder)
     {
         parent::__construct();
         $this->entityManager = $entityManager;
         $this->validator = $validator;
+        $this->passwordEncoder = $passwordEncoder;
     }
 
 
@@ -72,7 +79,9 @@ class KoelUserAddCommand extends Command
 
         $isAdmin = $input->hasOption('isAdmin');
 
-        $user = new User($name, $mail, $password, $isAdmin);
+        $user = new User($name, $mail, '', $isAdmin);
+        $password = $this->passwordEncoder->encodePassword($user, $password);
+        $user->setPassword($password);
 
         $errors = $this->validator->validate($user);
 

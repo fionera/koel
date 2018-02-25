@@ -1,14 +1,40 @@
 security:
-    # https://symfony.com/doc/current/security.html#where-do-users-come-from-user-providers
+    encoders:
+        App\Entity\User:
+            algorithm: bcrypt
+
     providers:
-        in_memory: { memory: ~ }
+        db_provider:
+            entity:
+                class: App\Entity\User
+                property: email
+
     firewalls:
         dev:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
-        main:
-            anonymous: true
-
+        api_me:
+            pattern:    ^/api/me
+            methods: [OPTIONS, DELETE]
+            security: false
+        api_play:
+            pattern:    ^/api/[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}/play
+            methods: [GET]
+            security: false
+        api_login:
+            pattern:    ^/api/me
+            methods: [POST]
+            security: false
+        login:
+            pattern:    ^/
+            provider: db_provider
+            json_login:
+                check_path:               /user/login
+                username_path:            email
+                password_path:            password
+                success_handler:          lexik_jwt_authentication.handler.authentication_success
+                failure_handler:          lexik_jwt_authentication.handler.authentication_failure
+                require_previous_session: false
             # activate different ways to authenticate
 
             # http_basic: true
