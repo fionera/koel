@@ -3,6 +3,8 @@
 namespace App\Controller;
 
 use App\Entity\Song;
+use App\Repository\SongRepository;
+use App\Service\SongService;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -33,14 +35,16 @@ class SongController extends Controller
     }
 
     /**
-     * @Route("/{songID}", name="song")
+     * @Route("/{songID}/play", name="song")
      * @param string $songID
+     * @param SongService $songService
+     * @param SongRepository $songRepository
      * @return Response
+     * @throws \InvalidArgumentException
      */
-    public function song(string $songID)
+    public function playSong(string $songID, SongService $songService, SongRepository $songRepository): Response
     {
-        $music = $this->container->get('League\Flysystem\Filesystem');
-        $song = $this->getDoctrine()->getRepository(Song::class)->findOneBy(['id' => $songID]);
+        $song = $songRepository->findOneBy(['id' => $songID]);
 
         if ($song === null) {
             return $this->json([
@@ -48,9 +52,8 @@ class SongController extends Controller
             ]);
         }
 
-        $response = new Response();
-        $response->setContent($music->get($song->getPath())->read());
-        $response->headers->set('Content-Length', $music->get($song->getPath())->getSize());
-        return $response;
+        return new Response($songService->readSong($song), 200, [
+            'Content-Length' => $songService->getSongSize($song)
+        ]);
     }
 }

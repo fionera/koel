@@ -7,6 +7,7 @@ use App\Entity\Artist;
 use App\Entity\Interaction;
 use App\Entity\Song;
 use App\Entity\User;
+use App\Repository\UserRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\Controller;
@@ -61,10 +62,52 @@ class LaravelAPIController extends Controller
      */
     public function meDeleteAction()
     {
-        $anonToken = new AnonymousToken('theTokensKey', 'anon.', array());
-        $this->get('security.token_storage')->setToken($anonToken);
+        return $this->redirect($this->generateUrl('user_logout'));
+    }
 
-        return new Response('', 200);
+    /**
+     * @Route("/user", name="user_post", methods={"POST"})
+     * @return Response
+     */
+    public function userPostAction(Request $request, UserInterface $user, UserRepository $userRepository, EntityManagerInterface $entityManager)
+    {
+        if (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            return new JsonResponse('', 401);
+        }
+
+        $json_data = json_decode($request->getContent(), true);
+
+        if ($userRepository->findOneBy(['email' => $json_data['email']]) !== null) {
+            return new JsonResponse(['message' => 'User exists'], 500);
+        }
+
+        $newUser = new User($json_data['name'], $json_data['email'], $json_data['password']);
+
+        $entityManager->persist($newUser);
+        $entityManager->flush();
+
+        return new JsonResponse(['email' => $newUser->getEmail(), 'name' => $newUser->getName(), 'id' => $newUser->getId()]);
+    }
+
+    /**
+     * @Route("/user/{id}", name="user_delete", methods={"DELETE"})
+     * @return Response
+     */
+    public function userDeleteAction(string $id, Request $request, UserInterface $user, UserRepository $userRepository, EntityManagerInterface $entityManager)
+    {
+        if (!in_array('ROLE_ADMIN', $user->getRoles(), true)) {
+            return new JsonResponse('', 401);
+        }
+
+        $deleteUser = $userRepository->findOneBy(['id' => $id]);
+        if ($deleteUser === null) {
+            return new JsonResponse(['message' => 'User does not exist'], 500);
+        }
+
+        $entityManager->remove($deleteUser);
+        $entityManager->flush();
+
+        return new Response('true');
     }
 
     /**
@@ -228,14 +271,12 @@ class LaravelAPIController extends Controller
 
     /**
      * @Route("/{songID}/play", name="me_song_play", methods={"GET"})
+     * @param string $songID
      * @return Response
      */
     public function songAction(string $songID)
     {
-        $songController = new SongController();
-        $songController->setContainer($this->container);
-
-        return $songController->song($songID);
+        return $this->redirect($this->generateUrl('song_song', ['songID' => $songID]));
     }
 
     /**
