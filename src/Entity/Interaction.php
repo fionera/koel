@@ -19,19 +19,19 @@ class Interaction
 
     /**
      * @var User
-     * @ORM\OneToOne(targetEntity="App\Entity\User", mappedBy="id")
+     * @ORM\ManyToOne(targetEntity="App\Entity\User")
      */
     private $userID;
 
     /**
      * @var Song
-     * @ORM\OneToOne(targetEntity="App\Entity\Song", mappedBy="id")
+     * @ORM\ManyToOne(targetEntity="App\Entity\Song")
      */
     private $songID;
 
     /**
-     * @var int
-     * @ORM\Column(type="string")
+     * @var bool
+     * @ORM\Column(type="boolean")
      */
     private $liked;
 
@@ -51,10 +51,10 @@ class Interaction
      * Interaction constructor.
      * @param User $userID
      * @param Song $songID
-     * @param int $liked
+     * @param bool $liked
      * @param int $playCount
      */
-    public function __construct(User $userID, Song $songID, int $liked, int $playCount)
+    public function __construct(User $userID, Song $songID, bool $liked = false, int $playCount = 0)
     {
         $this->userID = $userID;
         $this->songID = $songID;
@@ -104,17 +104,17 @@ class Interaction
     }
 
     /**
-     * @return int
+     * @return bool
      */
-    public function getLiked(): int
+    public function getLiked(): bool
     {
         return $this->liked;
     }
 
     /**
-     * @param int $liked
+     * @param bool $liked
      */
-    public function setLiked(int $liked): void
+    public function setLiked(bool $liked): void
     {
         $this->liked = $liked;
     }

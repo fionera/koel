@@ -10,7 +10,7 @@ use Doctrine\ORM\Mapping as ORM;
 class Artist
 {
     /**
-     * @var int
+     * @var string
      * @ORM\Id
      * @ORM\GeneratedValue(strategy="UUID")
      * @ORM\Column(type="guid")
@@ -48,9 +48,9 @@ class Artist
     }
 
     /**
-     * @return int
+     * @return string
      */
-    public function getId(): int
+    public function getId(): string
     {
         return $this->id;
     }
