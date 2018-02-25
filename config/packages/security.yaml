@@ -14,16 +14,12 @@ security:
             pattern: ^/(_(profiler|wdt)|css|images|js)/
             security: false
         api_me:
-            pattern:    ^/api/me
-            methods: [OPTIONS, DELETE]
+            pattern:    ^/{1,2}api/me
+            methods: [OPTIONS, DELETE, POST]
             security: false
         api_play:
-            pattern:    ^/api/[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}/play
+            pattern:    ^/{1,2}api/[0-9a-z]{8}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{4}-[0-9a-z]{12}/play
             methods: [GET]
-            security: false
-        api_login:
-            pattern:    ^/api/me
-            methods: [POST]
             security: false
         login:
             pattern:    ^/

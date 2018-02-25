@@ -18,7 +18,7 @@ use Symfony\Component\Security\Core\Authentication\Token\AnonymousToken;
 use Symfony\Component\Security\Core\User\UserInterface;
 
 /**
- * @Route("/api", name="laravel_api_")
+ * @Route("/{slash}api", name="laravel_api_slash_", requirements={"slash"="\/?"})
  */
 class LaravelAPIController extends Controller
 {
@@ -68,13 +68,14 @@ class LaravelAPIController extends Controller
     }
 
     /**
-     * @Route("/interaction/play", name="me_interaction_play", methods={"POST"})
+     * @Route("/interaction/{action}", name="me_interaction_play", methods={"POST"})
+     * @param string $action
      * @param Request $request
      * @param EntityManagerInterface $entityManager
      * @param UserInterface|null $authenticatedUser
      * @return Response
      */
-    public function interactionPlayAction(Request $request, EntityManagerInterface $entityManager, UserInterface  $authenticatedUser = null): Response
+    public function interactionAction(string $action, Request $request, EntityManagerInterface $entityManager, UserInterface $authenticatedUser = null): Response
     {
         if ($authenticatedUser === null || !$authenticatedUser instanceof User) {
             return new JsonResponse(null, 401);
@@ -94,7 +95,17 @@ class LaravelAPIController extends Controller
             $interaction = new Interaction($authenticatedUser, $song, false, 0);
         }
 
-        $interaction->setPlayCount($interaction->getPlayCount() + 1);
+        switch ($action) {
+            case 'play':
+                $interaction->setPlayCount($interaction->getPlayCount() + 1);
+                break;
+            case 'like':
+                $interaction->setLiked(!$interaction->getLiked());
+                break;
+            default:
+                return new JsonResponse(null, 404);
+                break;
+        }
 
         $entityManager->persist($interaction);
         $entityManager->flush();
@@ -190,16 +201,6 @@ class LaravelAPIController extends Controller
             ];
         }, $this->entityManager->getRepository(Song::class)->findAll());
 
-        $response['users'] = array_map(function (User $user) {
-            return [
-                'id' => $user->getId(),
-                'name' => $user->getName(),
-                'email' => $user->getEmail(),
-                'is_admin' => $user->isAdmin(),
-                'preferences' => []
-            ];
-        }, $this->entityManager->getRepository(User::class)->findAll());
-
         $response['currentUser'] = [
             'id' => $authenticatedUser->getId(),
             'name' => $authenticatedUser->getName(),
@@ -207,6 +208,20 @@ class LaravelAPIController extends Controller
             'is_admin' => $authenticatedUser->isAdmin(),
             'preferences' => []
         ];
+
+        if ($authenticatedUser->isAdmin()) {
+            $response['users'] = array_map(function (User $user) {
+                return [
+                    'id' => $user->getId(),
+                    'name' => $user->getName(),
+                    'email' => $user->getEmail(),
+                    'is_admin' => $user->isAdmin(),
+                    'preferences' => []
+                ];
+            }, $this->entityManager->getRepository(User::class)->findAll());
+        } else {
+            $response['users'] = $response['currentUser'];
+        }
 
         return new JsonResponse($response);
     }
@@ -222,6 +237,7 @@ class LaravelAPIController extends Controller
 
         return $songController->song($songID);
     }
+
     /**
      * @Route("/{songID}/info", name="me_info", methods={"GET"})
      * @return Response
