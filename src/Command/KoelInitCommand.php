@@ -3,6 +3,7 @@
 namespace App\Command;
 
 use Symfony\Component\Console\Command\Command;
+use Symfony\Component\Console\Input\ArrayInput;
 use Symfony\Component\Console\Input\InputArgument;
 use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
@@ -16,25 +17,40 @@ class KoelInitCommand extends Command
     protected function configure()
     {
         $this
-            ->setDescription('Add a short description for your command')
-            ->addArgument('arg1', InputArgument::OPTIONAL, 'Argument description')
-            ->addOption('option1', null, InputOption::VALUE_NONE, 'Option description')
+            ->setDescription('Setup Koel')
         ;
     }
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         $io = new SymfonyStyle($input, $output);
-        $arg1 = $input->getArgument('arg1');
 
-        if ($arg1) {
-            $io->note(sprintf('You passed an argument: %s', $arg1));
-        }
+        //Create default User
+        $command = $this->getApplication()->find('koel:init:database');
+        $arguments = array(
+            'command' => 'koel:init:database'
+        );
 
-        if ($input->getOption('option1')) {
-            // ...
-        }
+        $initDatabaseCommand = new ArrayInput($arguments);
+        $returnCode = $command->run($initDatabaseCommand, $output);
 
-        $io->success('You have a new command! Now make it your own! Pass --help to see your options.');
+
+
+        //Create default User
+        $command = $this->getApplication()->find('koel:user:add');
+        $arguments = array(
+            'command' => 'koel:user:add',
+            '--isAdmin'  => true,
+        );
+
+        $createUserCommand = new ArrayInput($arguments);
+        $returnCode = $command->run($createUserCommand, $output);
+
+
+        //Cache?
+        //Redis -> Account details
+        //Elasticsearch
+
+        $io->success('Koel is ready to use');
     }
 }
